@@ -9,11 +9,17 @@ const useBrand = () => useContext(BrandContext);
 
 // Build a CSS override that re-skins the SAME layout with a venue's colors.
 const THEME_VARS = ["sand", "sand2", "card", "ink", "muted", "terra", "terra2", "palm", "brz", "line"];
-function themeCss(colors) {
-  if (!colors) return "";
-  const vars = THEME_VARS.filter((k) => colors[k]).map((k) => `--${k}:${colors[k]}`).join(";");
-  const bg = colors.bg1 && colors.bg2 ? `.sd{background:linear-gradient(180deg,${colors.bg1} 0%,${colors.bg2} 100%)}` : "";
-  return `.sd{${vars}}${bg}`;
+const FONT_VARS = { body: "--font-body", serif: "--font-serif", brand: "--font-brand" };
+function themeCss(branding) {
+  const colors = branding.colors || null;
+  const fonts = branding.fonts || null;
+  let decls = "";
+  if (colors) decls += THEME_VARS.filter((k) => colors[k]).map((k) => `--${k}:${colors[k]}`).join(";");
+  if (fonts) decls += ";" + Object.keys(FONT_VARS).filter((k) => fonts[k]).map((k) => `${FONT_VARS[k]}:${fonts[k]}`).join(";");
+  const bg = colors && colors.bg1 && colors.bg2 ? `.sd{background:linear-gradient(180deg,${colors.bg1} 0%,${colors.bg2} 100%)}` : "";
+  // load the venue's web fonts if it ships a Google Fonts URL
+  const fontImport = branding.fontImport ? `@import url('${branding.fontImport}');` : "";
+  return `${fontImport}.sd{${decls}}${bg}`;
 }
 
 // ============================================================================
@@ -1057,16 +1063,17 @@ function ingredientsOf(item, catKey) {
    =========================================================================== */
 const STYLE = `
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Italianno&family=Jost:wght@400;500;600;700&display=swap');
-:root{--sand:#ECDDCA;--sand2:#F6EFE3;--card:#FCF8F0;--ink:#33231A;--muted:#8C7A67;--terra:#9C3A1F;--terra2:#B9512C;--palm:#5F7355;--brz:#A9824C;--line:rgba(51,35,26,.12)}
+:root{--sand:#ECDDCA;--sand2:#F6EFE3;--card:#FCF8F0;--ink:#33231A;--muted:#8C7A67;--terra:#9C3A1F;--terra2:#B9512C;--palm:#5F7355;--brz:#A9824C;--line:rgba(51,35,26,.12);--font-body:'Jost',sans-serif;--font-serif:'Cormorant Garamond',serif;--font-brand:'Italianno',cursive}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-.sd{font-family:'Jost',sans-serif;color:var(--ink);min-height:100vh;background:linear-gradient(180deg,#F8F1E5 0%,#EFE2CF 100%);display:flex;justify-content:center}
+.sd{font-family:var(--font-body);color:var(--ink);min-height:100vh;background:linear-gradient(180deg,#F8F1E5 0%,#EFE2CF 100%);display:flex;justify-content:center}
 .wrap{width:100%;max-width:480px;min-height:100vh;position:relative;padding-bottom:96px;overflow:hidden}
-.serif{font-family:'Cormorant Garamond',serif}
+.serif{font-family:var(--font-serif)}
 .hdr{position:sticky;top:0;z-index:40;padding:14px 18px 14px;background:linear-gradient(180deg,rgba(247,240,228,.97),rgba(247,240,228,.82));backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brandrow>div:first-child{min-width:0}
-.brand{font-family:'Italianno',cursive;font-weight:400;font-size:37px;line-height:.85;color:var(--terra)}
-.tag{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--terra);opacity:.85;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand{font-family:var(--font-brand);font-weight:400;font-size:37px;line-height:.85;color:var(--terra)}
+.brandlogo{height:42px;width:auto;max-width:180px;object-fit:contain;display:block}
+.tag{font-family:var(--font-serif);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--terra);opacity:.85;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .langs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;flex:none}
 .lang{border:0;background:transparent;font-family:inherit;font-weight:600;font-size:12px;color:var(--muted);padding:5px 9px;border-radius:999px;cursor:pointer}
 .lang.on{background:var(--ink);color:#F6EFE3}
@@ -1074,7 +1081,7 @@ const STYLE = `
 .spot .ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:18px;flex:none;background:linear-gradient(135deg,#E8D6BC,var(--sand));border:1px solid var(--line)}
 .spot>div{min-width:0;flex:1}
 .spot .lab{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);line-height:1.2}
-.spot .val{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px;line-height:1.2;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spot .val{font-family:var(--font-serif);font-weight:600;font-size:19px;line-height:1.2;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .minbar{margin-top:11px}
 .minrow{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:6px;font-weight:500}
 .minrow b{color:var(--ink);font-weight:600}
@@ -1085,27 +1092,27 @@ const STYLE = `
 .search{margin:14px 18px 0;display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
 .search input{border:0;outline:0;font-family:inherit;font-size:15px;width:100%;background:transparent;color:var(--ink)}
 .search input::placeholder{color:var(--muted)}
-.h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;margin:20px 18px 10px}
+.h2{font-family:var(--font-serif);font-weight:600;font-size:22px;margin:20px 18px 10px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 18px}
 .cat{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:1.18;border:1px solid var(--line);cursor:pointer;background:#E4D4BD;box-shadow:0 12px 26px -20px rgba(51,35,26,.65)}
 .cat img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
 .cat:active img{transform:scale(1.06)}
 .cat .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(31,18,9,0) 30%,rgba(31,18,9,.74) 100%)}
-.cat .nm{position:absolute;left:12px;right:12px;bottom:11px;color:#F6EFE3;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;line-height:1.1;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.cat .nm{position:absolute;left:12px;right:12px;bottom:11px;color:#F6EFE3;font-family:var(--font-serif);font-weight:600;font-size:17px;line-height:1.1;text-shadow:0 1px 8px rgba(0,0,0,.4)}
 .chiprow{position:sticky;top:0;z-index:30;display:flex;gap:8px;overflow-x:auto;padding:12px 18px;background:linear-gradient(180deg,rgba(247,240,228,.97),rgba(247,240,228,.86));backdrop-filter:blur(8px);border-bottom:1px solid var(--line);scrollbar-width:none}
 .chiprow::-webkit-scrollbar{display:none}
 .chip{flex:none;border:1px solid var(--line);background:var(--card);font-family:inherit;font-weight:600;font-size:13px;color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .chip.on{background:var(--ink);color:#F6EFE3;border-color:var(--ink)}
-.grp{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px;margin:20px 18px 8px;display:flex;align-items:center;gap:10px}
+.grp{font-family:var(--font-serif);font-weight:600;font-size:19px;margin:20px 18px 8px;display:flex;align-items:center;gap:10px}
 .grp:after{content:"";height:1px;flex:1;background:var(--line)}
 .row{display:flex;gap:13px;padding:11px 18px;align-items:flex-start}
 .row+.row{border-top:1px solid var(--line)}
 .thumb{width:74px;height:74px;border-radius:13px;object-fit:cover;flex:none;background:#E7D8C2}
-.thumb.ph{display:grid;place-items:center;color:#F6EFE3;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;background:linear-gradient(135deg,var(--terra2),var(--terra))}
+.thumb.ph{display:grid;place-items:center;color:#F6EFE3;font-family:var(--font-serif);font-weight:600;font-size:22px;background:linear-gradient(135deg,var(--terra2),var(--terra))}
 .it{flex:1;min-width:0}
 .it h4{font-size:15px;font-weight:600;margin:1px 0 0;line-height:1.2;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .it p{font-size:12.5px;color:var(--muted);line-height:1.35;margin:4px 0 0}
-.it .pr{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:16px;margin-top:6px;color:var(--terra)}
+.it .pr{font-family:var(--font-serif);font-weight:700;font-size:16px;margin-top:6px;color:var(--terra)}
 .alle{display:inline-flex;gap:3px;margin-left:2px}
 .alle span{font-size:12px;opacity:.9}
 .badge{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:6px}
@@ -1122,11 +1129,11 @@ const STYLE = `
 .sheet{width:100%;max-width:480px;background:var(--sand2);border-radius:24px 24px 0 0;max-height:92vh;overflow:auto;animation:rise .28s cubic-bezier(.2,.8,.2,1)}
 @keyframes rise{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet .hero{width:100%;height:210px;object-fit:cover;display:block;background:#E7D8C2}
-.sheet .hero.ph{display:grid;place-items:center;color:#F6EFE3;font-family:'Cormorant Garamond',serif;font-size:40px;background:linear-gradient(135deg,var(--terra2),var(--terra))}
+.sheet .hero.ph{display:grid;place-items:center;color:#F6EFE3;font-family:var(--font-serif);font-size:40px;background:linear-gradient(135deg,var(--terra2),var(--terra))}
 .sbody{padding:18px 20px 22px}
-.sbody h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:25px;margin:0;line-height:1.1}
+.sbody h3{font-family:var(--font-serif);font-weight:600;font-size:25px;margin:0;line-height:1.1}
 .sbody .d{color:var(--muted);font-size:14px;line-height:1.5;margin:9px 0 0}
-.sbody .pr{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:23px;margin:14px 0 0;color:var(--terra)}
+.sbody .pr{font-family:var(--font-serif);font-weight:700;font-size:23px;margin:14px 0 0;color:var(--terra)}
 .tagsec{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:18px;margin-bottom:8px}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .tagc{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 9px}
@@ -1137,24 +1144,24 @@ const STYLE = `
 .ing.off{text-decoration:line-through;color:var(--muted);background:#EBDFC9;opacity:.75}
 .qrow{display:flex;align-items:center;gap:14px;margin-top:18px}
 .stp{width:42px;height:42px;border-radius:13px;border:1px solid var(--line);background:var(--card);font-size:22px;cursor:pointer;color:var(--ink)}
-.qn{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:21px;min-width:24px;text-align:center}
+.qn{font-family:var(--font-serif);font-weight:700;font-size:21px;min-width:24px;text-align:center}
 .ta{width:100%;margin-top:14px;border:1px solid var(--line);border-radius:13px;padding:12px;font-family:inherit;font-size:14px;resize:none;background:var(--card);color:var(--ink)}
 .cta{width:100%;margin-top:16px;border:0;cursor:pointer;color:#F6EFE3;font-family:inherit;font-weight:600;letter-spacing:.02em;font-size:16px;border-radius:15px;padding:16px;background:linear-gradient(100deg,var(--terra),var(--terra2));box-shadow:0 14px 26px -12px var(--terra);display:flex;align-items:center;justify-content:center;gap:8px}
 .cta.dark{background:linear-gradient(100deg,var(--ink),#4A352A);box-shadow:0 14px 26px -14px rgba(51,35,26,.8)}
 .cta:disabled{opacity:.7}
 .shead{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 6px}
-.shead h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:23px;margin:0}
+.shead h3{font-family:var(--font-serif);font-weight:600;font-size:23px;margin:0}
 .x{border:0;background:var(--card);border:1px solid var(--line);width:34px;height:34px;border-radius:11px;font-size:18px;cursor:pointer;color:var(--ink)}
 .cl{display:flex;gap:11px;padding:14px 20px;align-items:center}
 .cl+.cl{border-top:1px solid var(--line)}
 .cl .nm{flex:1;font-weight:600;font-size:14.5px;min-width:0}
 .cl .nm small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px}
-.cl .pp{font-family:'Cormorant Garamond',serif;font-weight:700}
+.cl .pp{font-family:var(--font-serif);font-weight:700}
 .mini{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--card);font-size:17px;cursor:pointer;color:var(--ink);flex:none}
 .rm{display:block;margin-top:4px;border:0;background:transparent;color:var(--terra);font-size:12px;cursor:pointer;padding:0;font-family:inherit;font-weight:500}
 .totrow{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px}
 .totrow .l{color:var(--muted);font-weight:500}
-.totrow .v{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:26px}
+.totrow .v{font-family:var(--font-serif);font-weight:700;font-size:26px}
 .field{margin:10px 20px 0}
 .field input{width:100%;border:1px solid var(--line);border-radius:13px;padding:13px;font-family:inherit;font-size:15px;background:var(--card);color:var(--ink)}
 .pmsec{margin:16px 20px 0;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -1168,16 +1175,16 @@ const STYLE = `
 .pm .e{font-size:20px;margin-left:auto}
 .success{padding:46px 26px 30px;text-align:center}
 .tick{width:78px;height:78px;border-radius:999px;margin:0 auto 18px;display:grid;place-items:center;color:#F6EFE3;font-size:40px;background:var(--palm);box-shadow:0 16px 30px -12px var(--palm)}
-.ono{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:32px;margin:8px 0 0}
+.ono{font-family:var(--font-serif);font-weight:700;font-size:32px;margin:8px 0 0}
 .spin{width:18px;height:18px;border:2.5px solid rgba(246,239,227,.5);border-top-color:#F6EFE3;border-radius:999px;display:inline-block;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .center{padding:90px 30px;text-align:center;color:var(--muted)}
-.center .big{font-family:'Cormorant Garamond',serif;font-size:46px;color:var(--ink)}
+.center .big{font-family:var(--font-serif);font-size:46px;color:var(--ink)}
 .stwrap{max-width:820px}
 .stbar{position:sticky;top:0;z-index:20;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 18px;background:rgba(247,240,228,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .ocard{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:14px 18px;overflow:hidden;box-shadow:0 12px 26px -22px rgba(51,35,26,.65)}
 .ohead{display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.ohead .loc{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px}
+.ohead .loc{font-family:var(--font-serif);font-weight:600;font-size:19px}
 .ohead .tm{margin-left:auto;font-size:12px;color:var(--muted)}
 .pill{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:4px 8px;border-radius:999px}
 .pill.new{background:rgba(156,58,31,.14);color:var(--terra)}
@@ -1190,28 +1197,28 @@ const STYLE = `
 .oline small{color:var(--muted)}
 .note{margin:2px 16px 10px;font-size:12.5px;color:var(--muted);font-style:italic}
 .ofoot{display:flex;gap:10px;padding:12px 16px;border-top:1px solid var(--line);align-items:center}
-.ofoot .t{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:17px;margin-right:auto}
+.ofoot .t{font-family:var(--font-serif);font-weight:700;font-size:17px;margin-right:auto}
 .btn{border:0;border-radius:11px;padding:10px 14px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;color:#F6EFE3}
 .btn.amber{background:linear-gradient(100deg,var(--brz),#8A6630)}
 .btn.sea{background:var(--palm)}
 .btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink)}
 .lkhead{padding:16px 18px 4px}
-.lkgrp{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px;margin:20px 18px 4px}
+.lkgrp{font-family:var(--font-serif);font-weight:600;font-size:19px;margin:20px 18px 4px}
 .lk{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line)}
 .lk img{width:62px;height:62px;border-radius:10px;background:var(--card);border:1px solid var(--line);flex:none}
 .lk .u{flex:1;min-width:0}
-.lk .u b{font-family:'Cormorant Garamond',serif;font-size:16px;display:block;margin-bottom:2px}
+.lk .u b{font-family:var(--font-serif);font-size:16px;display:block;margin-bottom:2px}
 .lk .u span{font-size:11.5px;color:var(--muted);word-break:break-all}
 .pick{padding:26px 18px 40px}
-.pickh{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:23px;line-height:1.2;margin-bottom:18px}
+.pickh{font-family:var(--font-serif);font-weight:600;font-size:23px;line-height:1.2;margin-bottom:18px}
 .typegrid{display:flex;flex-direction:column;gap:12px}
 .typecard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;cursor:pointer;font-family:inherit;box-shadow:0 10px 24px -18px rgba(51,35,26,.55)}
 .typecard:active{transform:scale(.99)}
 .typecard .tcic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:23px;flex:none;background:linear-gradient(135deg,#E8D6BC,var(--sand));border:1px solid var(--line)}
-.typecard .tcname{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;flex:1}
+.typecard .tcname{font-family:var(--font-serif);font-weight:600;font-size:20px;flex:1}
 .typecard .tcarrow{color:var(--muted);font-size:22px}
 .numgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.numchip{aspect-ratio:1;border:1px solid var(--line);background:var(--card);border-radius:14px;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:19px;color:var(--ink);cursor:pointer}
+.numchip{aspect-ratio:1;border:1px solid var(--line);background:var(--card);border-radius:14px;font-family:var(--font-serif);font-weight:700;font-size:19px;color:var(--ink);cursor:pointer}
 .numchip:active{transform:scale(.94);background:var(--sand)}
 /* delivery destination picker (Mode A checkout) */
 .destpick{margin:0 20px 12px;background:var(--sand);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -1234,7 +1241,7 @@ const STYLE = `
 .acctmenu .lo{margin-top:8px;width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px;font-family:inherit;font-weight:600;font-size:13px;color:var(--terra);cursor:pointer}
 .acctwrap{position:relative;flex:none}
 .loginsheet{max-width:420px}
-.lh{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;margin-bottom:14px}
+.lh{font-family:var(--font-serif);font-weight:600;font-size:22px;margin-bottom:14px}
 .seg{display:flex;gap:6px;background:var(--sand);border-radius:12px;padding:4px;margin-bottom:16px}
 .segb{flex:1;border:0;background:transparent;font-family:inherit;font-weight:600;font-size:13px;color:var(--muted);padding:9px;border-radius:9px;cursor:pointer}
 .segb.on{background:var(--card);color:var(--ink);box-shadow:0 2px 8px -4px rgba(51,35,26,.4)}
@@ -1249,15 +1256,15 @@ const STYLE = `
 .lscreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 24px 40px}
 .lscreen .langs{align-self:flex-end}
 .lslogo{width:158px;height:158px;border-radius:999px;margin:7vh auto 0;display:block;object-fit:contain;box-shadow:0 22px 50px -22px rgba(51,35,26,.55),0 0 0 1px var(--line);background:var(--sand)}
-.lswelcome{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:30px;text-align:center;margin:26px 0 4px;line-height:1.1}
+.lswelcome{font-family:var(--font-serif);font-weight:600;font-size:30px;text-align:center;margin:26px 0 4px;line-height:1.1}
 .lssub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.5}
 .lscard{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 20px;box-shadow:0 24px 50px -30px rgba(51,35,26,.6)}
 .lscard .cta{margin-top:6px}
-.otpin{width:100%;border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--sand2);color:var(--ink);font-family:'Cormorant Garamond',serif;font-weight:700;font-size:30px;text-align:center;letter-spacing:.45em;text-indent:.45em}
+.otpin{width:100%;border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--sand2);color:var(--ink);font-family:var(--font-serif);font-weight:700;font-size:30px;text-align:center;letter-spacing:.45em;text-indent:.45em}
 .otpin:focus{outline:none;border-color:var(--terra);box-shadow:0 0 0 3px rgba(156,58,31,.12)}
 .lssent{text-align:center;color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.5}
 .lssent b{color:var(--ink);font-weight:600}
-.lsfoot{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-top:auto;padding-top:34px;text-align:center}
+.lsfoot{font-family:var(--font-serif);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-top:auto;padding-top:34px;text-align:center}
 `;
 
 /* ===========================================================================
@@ -1476,7 +1483,7 @@ function Guest({ loc, deliveryMode, tableMode, lang, setLang, venueTypes, rawMen
     <div className="wrap">
       <div className="hdr">
         <div className="brandrow">
-          <div><div className="brand">{brand.text}</div><div className="tag">{tx("tagline", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("tagline", lang)}</div></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "none" }}>
             {acct && <AccountControl {...acct} lang={lang} />}
             <div className="langs">
@@ -1752,7 +1759,7 @@ function Staff({ lang, venueTypes }) {
     <div className="wrap stwrap">
       <div className="hdr">
         <div className="brandrow">
-          <div><div className="brand">{brand.text}</div><div className="tag">{tx("board", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("board", lang)}</div></div>
           <button className="btn ghost" onClick={load}>↻ {tx("refresh", lang)}</button>
         </div>
       </div>
@@ -1803,7 +1810,7 @@ function Links({ lang, venueTypes }) {
     <div className="wrap stwrap">
       <div className="hdr">
         <div className="brandrow">
-          <div><div className="brand">{brand.text}</div><div className="tag">{tx("linksTitle", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("linksTitle", lang)}</div></div>
         </div>
       </div>
       <div className="lkhead" style={{ color: "var(--muted)", fontSize: 13 }}>{tx("linksSub", lang)} · {base || "your-domain.com"}</div>
@@ -1958,7 +1965,7 @@ export default function App() {
   // Per-venue branding + ordering mode (from the menu API).
   const venueMeta = rawMenu?.venue || {};
   const branding = venueMeta.branding || {};
-  const brand = { text: branding.brandText || venueMeta.name || "SunDaze", logo: branding.logo || logoUrl, tagline: branding.tagline || null };
+  const brand = { text: branding.brandText || venueMeta.name || "SunDaze", logo: branding.logo || logoUrl, hasLogo: !!branding.logo, tagline: branding.tagline || null };
   const orderMode = venueMeta.orderMode || "anonymous";
   const deliveryMode = orderMode === "account_delivery";
   const tableMode = orderMode === "account_table";
@@ -1968,7 +1975,7 @@ export default function App() {
   return (
     <div className="sd">
       <style>{STYLE}</style>
-      {branding.colors && <style>{themeCss(branding.colors)}</style>}
+      {(branding.colors || branding.fonts || branding.fontImport) && <style>{themeCss(branding)}</style>}
       <BrandContext.Provider value={brand}>
         {view === "staff" ? <Staff lang={lang} venueTypes={venueTypes} />
           : view === "links" ? <Links lang={lang} venueTypes={venueTypes} />
@@ -2081,7 +2088,7 @@ function SpotPicker({ lang, setLang, onPick, venueTypes, acct }) {
     <div className="wrap">
       <div className="hdr">
         <div className="brandrow">
-          <div><div className="brand">{brand.text}</div><div className="tag">{tx("tagline", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("tagline", lang)}</div></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "none" }}>
             {acct && <AccountControl {...acct} lang={lang} />}
             <div className="langs">
