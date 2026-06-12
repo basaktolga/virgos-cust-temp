@@ -1483,7 +1483,7 @@ function Guest({ loc, deliveryMode, tableMode, lang, setLang, venueTypes, rawMen
     <div className="wrap">
       <div className="hdr">
         <div className="brandrow">
-          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("tagline", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = logoUrl; }} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("tagline", lang)}</div></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "none" }}>
             {acct && <AccountControl {...acct} lang={lang} />}
             <div className="langs">
@@ -1759,7 +1759,7 @@ function Staff({ lang, venueTypes }) {
     <div className="wrap stwrap">
       <div className="hdr">
         <div className="brandrow">
-          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("board", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = logoUrl; }} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("board", lang)}</div></div>
           <button className="btn ghost" onClick={load}>↻ {tx("refresh", lang)}</button>
         </div>
       </div>
@@ -1810,7 +1810,7 @@ function Links({ lang, venueTypes }) {
     <div className="wrap stwrap">
       <div className="hdr">
         <div className="brandrow">
-          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("linksTitle", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = logoUrl; }} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("linksTitle", lang)}</div></div>
         </div>
       </div>
       <div className="lkhead" style={{ color: "var(--muted)", fontSize: 13 }}>{tx("linksSub", lang)} · {base || "your-domain.com"}</div>
@@ -2088,7 +2088,7 @@ function SpotPicker({ lang, setLang, onPick, venueTypes, acct }) {
     <div className="wrap">
       <div className="hdr">
         <div className="brandrow">
-          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("tagline", lang)}</div></div>
+          <div>{brand.hasLogo ? <img className="brandlogo" src={brand.logo} alt={brand.text} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = logoUrl; }} /> : <div className="brand">{brand.text}</div>}<div className="tag">{tx("tagline", lang)}</div></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "none" }}>
             {acct && <AccountControl {...acct} lang={lang} />}
             <div className="langs">
