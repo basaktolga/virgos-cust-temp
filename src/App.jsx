@@ -1966,10 +1966,14 @@ export default function App() {
   const venueMeta = rawMenu?.venue || {};
   const branding = venueMeta.branding || {};
   const brand = { text: branding.brandText || venueMeta.name || "SunDaze", logo: branding.logo || logoUrl, hasLogo: !!branding.logo, tagline: branding.tagline || null };
-  const orderMode = venueMeta.orderMode || "anonymous";
+  // Build-time mode (VITE_ORDER_MODE) lets an account venue show the LoginScreen
+  // first, before the menu loads (the older, snappier flow). Runtime orderMode
+  // from the API wins once available; anonymous venues never gate on login.
+  const buildMode = (import.meta.env && import.meta.env.VITE_ORDER_MODE) || "";
+  const orderMode = venueMeta.orderMode || buildMode || "anonymous";
   const deliveryMode = orderMode === "account_delivery";
   const tableMode = orderMode === "account_table";
-  const needsLogin = orderMode.startsWith("account");   // anonymous venues skip the login gate
+  const needsLogin = (venueMeta.orderMode || buildMode || "").startsWith("account");
   const loading = <div className="wrap lscreen"><img className="lslogo" src={brand.logo} alt={brand.text} style={{ marginTop: "32vh" }} /></div>;
 
   return (
@@ -1979,9 +1983,9 @@ export default function App() {
       <BrandContext.Provider value={brand}>
         {view === "staff" ? <Staff lang={lang} venueTypes={venueTypes} />
           : view === "links" ? <Links lang={lang} venueTypes={venueTypes} />
-          : !rawMenu ? loading
           : needsLogin && !authReady ? loading
           : needsLogin && !account ? <LoginScreen lang={lang} setLang={setLang} onLoggedIn={setAccount} />
+          : !rawMenu ? loading
           : (loc || deliveryMode) ? <Guest loc={loc} deliveryMode={deliveryMode} tableMode={tableMode} lang={lang} setLang={setLang} venueTypes={venueTypes} rawMenu={rawMenu} acct={acct} />
           : <SpotPicker lang={lang} setLang={setLang} onPick={choose} venueTypes={venueTypes} acct={acct} />}
       </BrandContext.Provider>
